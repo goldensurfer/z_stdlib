@@ -1,22 +1,8 @@
-REBAR := $(shell which rebar 2>/dev/null || echo ./rebar)
-REBAR_URL := https://github.com/downloads/basho/rebar/rebar
+PROJECT = z_stdlib
 
-.PHONY: compile test
+ERLC_OPTS = +debug_info +warn_export_all +warn_export_vars +warn_shadow_vars +warn_obsolete_guard
 
-all: compile
+PLT_APPS = hipe sasl mnesia crypto compiler syntax_tools
+DIALYZER_OPTS = -Werror_handling -Wrace_conditions -Wunmatched_returns | fgrep -v -f ./dialyzer.ignore-warning
 
-compile: $(REBAR)
-	$(REBAR) get-deps compile
-
-test: $(REBAR)
-	$(REBAR) -C rebar.test.config get-dep compile
-	$(REBAR) -C rebar.test.config eunit -v skip_deps=true
-
-clean:
-	$(REBAR) clean
-
-./rebar:
-	erl -noshell -s inets start -s ssl start \
-        -eval '{ok, saved_to_file} = httpc:request(get, {"$(REBAR_URL)", []}, [], [{stream, "./rebar"}])' \
-        -s inets stop -s init stop
-	chmod +x ./rebar
+include erlang.mk
